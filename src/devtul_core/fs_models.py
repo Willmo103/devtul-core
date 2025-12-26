@@ -337,6 +337,12 @@ class ImageFileModel(BaseFileModel):
 class BaseDirectoryModel(BaseModel):
     """
     A Pydantic model to represent a directory with its path and file statistics.
+
+    Attributes:
+        path_json (PathModel): The path model of the directory.
+        stat_json (BaseFileStatModel): The file statistics model of the directory.
+        files (list[BaseFileModel]): A list of files in the directory.
+        directories (list["BaseDirectoryModel"]): A list of subdirectories in the directory.
     """
 
     path_json: PathModel
@@ -352,6 +358,12 @@ class BaseDirectoryModel(BaseModel):
         },
         "arbitrary_types_allowed": True,
     }
+
+    def is_empty(self) -> bool:
+        """
+        Check if the directory is empty (no files and no subdirectories).
+        """
+        return len(self.files) == 0 and len(self.directories) == 0
 
 
 BaseDirectoryModel.model_rebuild()  # For self-referencing models
