@@ -16,7 +16,7 @@ echo.
 echo ==========================================
 echo Running PYTEST (Unit Tests)
 echo ==========================================
-uv run pytest
+uv run pytest --cov=src --cov-report=html
 if %ERRORLEVEL% NEQ 0 goto :error
 
 echo.
