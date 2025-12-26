@@ -1,1 +1,5 @@
-from fs_models import *  # noqa: F401, F403
+from . import fs_models  # noqa: F401
+
+
+def hello():
+    return "Hello from devtul-core!"

@@ -355,3 +355,20 @@ class BaseDirectoryModel(BaseModel):
 
 
 BaseDirectoryModel.model_rebuild()  # For self-referencing models
+
+__all__ = [
+    "BaseFileStatModel",
+    "MacOSFileStatModel",
+    "WindowsFileStatModel",
+    "LinuxFileStatModel",
+    "PathModel",
+    "get_file_sha256",
+    "get_file_stat_model",
+    "get_path_model",
+    "FileLineModel",
+    "FileLinesModel",
+    "BaseFileModel",
+    "TextFileModel",
+    "ImageFileModel",
+    "BaseDirectoryModel",
+]
