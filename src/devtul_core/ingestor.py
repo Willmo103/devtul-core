@@ -1,9 +1,11 @@
 from sqlalchemy.orm import Session
 
 from devtul_core.db_models import (
-    FileBase,
+    FileModel,
+    ImageFileModel,
     Repository,
     RepoSnapshot,
+    TextFileModel,
 )
 from devtul_core.fs_models import (
     BaseDirectoryModel,
@@ -53,15 +55,18 @@ def ingest_scan(
                 db_file = ImageFileModel(
                     **common_data,
                     b64_data=p_file.b64_data,
-                    thumbnail_b64_data=p_file.thubnail_b64_data,  # Note: matching typo in Pydantic if present
+                    thumbnail_b64_data=p_file.thumbnail_b64_data,  # Matches Pydantic model field
                     exif_data=p_file.exif_data,
                     fmt=p_file.fmt,
                 )
             else:
                 # Fallback for generic binary files
-                db_file = FileBase(**common_data)
+                db_file = FileModel(**common_data)
 
-            # Recurse
+            session.add(db_file)
+
+        # Recurse
+        for subdir in directory.directories:
             _recurse_save(subdir)
 
     _recurse_save(dir_model)

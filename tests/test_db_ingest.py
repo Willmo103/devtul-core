@@ -87,7 +87,7 @@ def mock_fs_data():
         stat_json=make_stat(),
         path_json=make_path("logo.png"),
         b64_data="fakebase64",
-        thubnail_b64_data="thumbbase64",  # Intentionally matching typo from your fs_models definition if needed
+        thumbnail_b64_data="thumbbase64",  # Intentionally matching typo from your fs_models definition if needed
         fmt="png",
         exif_data={"camera": "canon"},
     )
@@ -177,7 +177,6 @@ def test_ingest_polymorphism(db_session, mock_fs_data):
     assert img_file.type == "image"
     assert img_file.fmt == "png"
     assert img_file.exif_data["camera"] == "canon"
-    # Note: accessing thumbnail_b64_data vs thubnail_b64_data depending on if you fixed typo in ingestor
     assert img_file.thumbnail_b64_data == "thumbbase64"
 
     # 3. Check Generic File

@@ -5,6 +5,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+# Ensure strict imports from your package structure
+from devtul_core.fs_models import (
+    BaseFileModel,  # Added this (needed for test setup below)
+)
 from devtul_core.fs_models import (
     BaseDirectoryModel,
     BaseFileStatModel,
@@ -107,14 +111,18 @@ def test_file_lines_logic():
 
 
 def test_image_thumbnail_tag():
-    # Note: Assuming 'thubnail_b64_data' as per your code,
-    # if you fixed the typo change this to 'thumbnail_b64_data'
+    # Setup dependencies
+    stat_mock = BaseFileStatModel()
+    path_mock = get_path_model(Path("test.png"))
+
     img = ImageFileModel(
         sha256="abc",
-        stat_json=BaseFileStatModel(),
-        path_json=get_path_model(Path("test.png")),
+        stat_json=stat_mock,
+        path_json=path_mock,
         b64_data="realdata",
-        thubnail_b64_data="thumbdata",
+        # NOTE: Verify your fs_models.py uses 'thumbnail...' or 'thumbnail...'
+        # I have corrected it to 'thumbnail' here.
+        thumbnail_b64_data="thumbdata",
         fmt="png",
     )
 
@@ -132,8 +140,7 @@ def test_directory_model(tmp_path):
     subdir.mkdir()
     (subdir / "file2.txt").touch()
 
-    # Manual construction test (since we don't have a get_dir_model helper yet)
-    # This validates the model structure handles recursion
+    # Manual construction test
     dir_model = BaseDirectoryModel(
         path_json=get_path_model(tmp_path),
         stat_json=get_file_stat_model(tmp_path),

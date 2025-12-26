@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, ForeignKey, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -9,25 +9,24 @@ class Base(DeclarativeBase):
     pass
 
 
-# --- Core Hierarchy Models ---
+# --- Repository / Snapshot Context ---
 
 
 class Repository(Base):
-    """The top-level identity of a repo (e.g., 'devtul-core')."""
+    """Identity of the repo."""
 
     __tablename__ = "repositories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String, unique=True)
-    path: Mapped[str] = mapped_column(String)  # Local path on disk
+    path: Mapped[str] = mapped_column(String)  # Local path root
 
     snapshots: Mapped[List["RepoSnapshot"]] = relationship(back_populates="repository")
 
 
 class RepoSnapshot(Base):
     """
-    Represents a specific scan event.
-    Acts as the entry point to a file tree version.
+    A lookup table linking a specific scan time to a collection of files.
     """
 
     __tablename__ = "repo_snapshots"
@@ -36,70 +35,38 @@ class RepoSnapshot(Base):
     repository_id: Mapped[int] = mapped_column(ForeignKey("repositories.id"))
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
-    # The root of the file tree for this snapshot
-    root_directory_id: Mapped[int] = mapped_column(ForeignKey("directories.id"))
-
     repository: Mapped["Repository"] = relationship(back_populates="snapshots")
-    root_directory: Mapped["Directory"] = relationship()
-
-
-class Directory(Base):
-    """
-    Represents a folder. Self-referential for the tree structure.
-    """
-
-    __tablename__ = "directories"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("directories.id"))
-
-    # PathModel fields flattened
-    name: Mapped[str] = mapped_column(String)
-    path: Mapped[str] = mapped_column(String, index=True)  # Full relative path
-
-    # StatModel fields (common)
-    st_size: Mapped[int] = mapped_column(Integer, default=0)
-    st_mtime: Mapped[float] = mapped_column(Float, default=0.0)
-
-    # Relationships
-    subdirectories: Mapped[List["Directory"]] = relationship(
-        back_populates="parent", cascade="all, delete-orphan"
-    )
-    parent: Mapped[Optional["Directory"]] = relationship(
-        back_populates="subdirectories", remote_side=[id]
-    )
-    files: Mapped[List["FileBase"]] = relationship(
-        back_populates="directory", cascade="all, delete-orphan"
+    files: Mapped[List["FileModel"]] = relationship(
+        back_populates="snapshot", cascade="all, delete-orphan"
     )
 
 
-# --- File Polymorphism ---
+# --- 1:1 File Models ---
 
 
-class FileBase(Base):
+class FileModel(Base):
     """
-    Base table for all files. Contains shared metadata.
+    Direct mapping of BaseFileModel.
     """
 
     __tablename__ = "files"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    directory_id: Mapped[int] = mapped_column(ForeignKey("directories.id"))
+    snapshot_id: Mapped[int] = mapped_column(
+        ForeignKey("repo_snapshots.id"), index=True
+    )
 
     # Polymorphic Identity
     type: Mapped[str] = mapped_column(String(20))
 
-    # Shared Fields
-    name: Mapped[str] = mapped_column(String)
-    path: Mapped[str] = mapped_column(String, index=True)  # Full relative path
-    sha256: Mapped[Optional[str]] = mapped_column(String(64))
+    # 1:1 Fields from Pydantic
+    sha256: Mapped[str] = mapped_column(String(64))
 
-    # Stat Fields
-    st_size: Mapped[int] = mapped_column(Integer, default=0)
-    st_mtime: Mapped[float] = mapped_column(Float, default=0.0)
-    st_ctime: Mapped[float] = mapped_column(Float, default=0.0)
+    # Storing the exact Pydantic nested models as JSON
+    path_json: Mapped[Dict[str, Any]] = mapped_column(JSON)
+    stat_json: Mapped[Dict[str, Any]] = mapped_column(JSON)
 
-    directory: Mapped["Directory"] = relationship(back_populates="files")
+    snapshot: Mapped["RepoSnapshot"] = relationship(back_populates="files")
 
     __mapper_args__ = {
         "polymorphic_identity": "file",
@@ -107,39 +74,38 @@ class FileBase(Base):
     }
 
 
-class TextFile(FileBase):
+class TextFileModel(FileModel):
     """
-    Specific storage for text files.
+    Direct mapping of TextFileModel.
     """
 
     __tablename__ = "text_files"
 
     id: Mapped[int] = mapped_column(ForeignKey("files.id"), primary_key=True)
-    content: Mapped[Optional[str]] = mapped_column(Text)
-    line_count: Mapped[int] = mapped_column(Integer, default=0)
 
-    # We can store the detailed line breakdown as JSON if needed
-    lines_data: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSON)
+    content: Mapped[str] = mapped_column(Text)
+
+    # Stores the FileLinesModel (list of FileLineModel)
+    lines_json: Mapped[Dict[str, Any]] = mapped_column(JSON)
 
     __mapper_args__ = {
         "polymorphic_identity": "text",
     }
 
 
-class ImageFile(FileBase):
+class ImageFileModel(FileModel):
     """
-    Specific storage for image files.
+    Direct mapping of ImageFileModel.
     """
 
     __tablename__ = "image_files"
 
     id: Mapped[int] = mapped_column(ForeignKey("files.id"), primary_key=True)
-    format: Mapped[Optional[str]] = mapped_column(String(10))
-    width: Mapped[Optional[int]] = mapped_column(Integer)
-    height: Mapped[Optional[int]] = mapped_column(Integer)
 
-    # Base64 data (store carefully, can be large)
-    b64_data: Mapped[Optional[str]] = mapped_column(Text)
+    fmt: Mapped[Optional[str]] = mapped_column(String(10))
+    b64_data: Mapped[str] = mapped_column(Text)
+    thumbnail_b64_data: Mapped[Optional[str]] = mapped_column(Text)
+    exif_data: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
 
     __mapper_args__ = {
         "polymorphic_identity": "image",

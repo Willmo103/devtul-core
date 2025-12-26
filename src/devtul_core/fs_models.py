@@ -388,26 +388,23 @@ class ImageFileModel(BaseFileModel):
     A Pydantic model to represent an image file with its dimensions.
     Attributes:
         b64_data (str): The base64-encoded image data.
-        thubnail_b64_data (Optional[str]): The base64-encoded thumbnail data.
+        thumbnail_b64_data (Optional[str]): The base64-encoded thumbnail data.
         exif_data (dict[str, Any]): The EXIF metadata of the image.
         fmt (Optional[str]): The image format (e.g., 'png', 'jpeg').
     """
 
     b64_data: str
-    thubnail_b64_data: Optional[str] = None
+    thumbnail_b64_data: Optional[str] = None
     exif_data: dict[str, Any] = {}
     fmt: Optional[str] = None
 
     def thumbnail_tag(self) -> Optional[str]:
-        if self.thubnail_b64_data and self.fmt:
-            return f'<img src="data:image/{self.fmt};base64,{self.thubnail_b64_data}" alt="Thumbnail"/>'
+        if self.thumbnail_b64_data and self.fmt:
+            return f'<img src="data:image/{self.fmt};base64,{self.thumbnail_b64_data}" alt="Thumbnail"/>'
         return None
 
     model_config = {
         **BaseFileModel.model_config,
-        "json_encoders": {
-            **BaseFileModel.model_config["json_encoders"],
-        },
     }
 
 
