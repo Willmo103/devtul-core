@@ -1,0 +1,11 @@
+services:
+  docs:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      # Optional: Mount src so you can rebuild without restarting if you add a watcher
+      - ./src:/app/src
+      - ./mkdocs.yml:/app/mkdocs.yml

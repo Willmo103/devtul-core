@@ -264,6 +264,26 @@ class BaseFileModel(BaseModel):
     stat_json: BaseFileStatModel
     path_json: PathModel
 
+    def to_yaml(self) -> str:
+        """
+        Serialize the model to a YAML string.
+        """
+        return yaml.dump(self.model_dump(), sort_keys=False)
+
+    @classmethod
+    def from_yaml(cls, yaml_str: str):
+        """
+        Deserialize a YAML string to an instance of the model.
+        """
+        data = yaml.safe_load(yaml_str)
+        return cls.model_validate(data)
+
+    def is_empty(self) -> bool:
+        """
+        Check if the file is empty based on its size.
+        """
+        return self.stat_json.st_size == 0
+
     model_config = {
         "json_encoders": {
             datetime: lambda v: v.isoformat(),

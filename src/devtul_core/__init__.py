@@ -1,2 +1,1 @@
-def hello() -> str:
-    return "Hello from devtul-core!"
+from fs_models import *  # noqa: F401, F403
