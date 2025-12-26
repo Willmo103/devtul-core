@@ -1,10 +1,11 @@
-from pydantic import BaseModel, computed_field
-from pathlib import Path
-from os import stat
-import yaml
-from datetime import datetime
-from typing import Any, Optional
 import platform
+from datetime import datetime
+from os import stat
+from pathlib import Path
+from typing import Any, Optional
+
+import yaml
+from pydantic import BaseModel, computed_field
 
 
 class BaseFileStatModel(BaseModel):
