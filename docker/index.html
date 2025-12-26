@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevTul Core Server</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .link-card {
+            display: block;
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-decoration: none;
+            color: #24292e;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .link-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #0366d6;
+        }
+
+        .link-card strong {
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 0.25rem;
+        }
+
+        .link-card span {
+            font-size: 0.9em;
+            color: #586069;
+        }
+
+        .meta {
+            margin-top: 2rem;
+            font-size: 0.8em;
+            color: #6a737d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>DevTul Core</h1>
+
+        <a href="/docs/" class="link-card">
+            <strong>📚 Documentation</strong>
+            <span>MkDocs generated reference</span>
+        </a>
+
+        <a href="/coverage/" class="link-card">
+            <strong>🧪 Test Coverage</strong>
+            <span>Pytest HTML Report</span>
+        </a>
+
+        <a href="/dist/" class="link-card">
+            <strong>📦 Artifacts</strong>
+            <span>Download .whl and .tar.gz</span>
+        </a>
+
+        <div class="meta">
+            Server running on Docker<br>
+            Nginx / Python 3.13
+        </div>
+    </div>
+</body>
+
+</html>

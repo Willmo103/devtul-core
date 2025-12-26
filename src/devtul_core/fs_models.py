@@ -10,7 +10,25 @@ from pydantic import BaseModel, computed_field
 
 class BaseFileStatModel(BaseModel):
     """
-    A Pydantic model to represent file statistics.
+    Base Pydantic model to represent file statistics.
+
+    Attributes:
+        st_mode (Optional[int]): Protection bits.
+        st_ino (Optional[int]): Inode number.
+        st_dev (Optional[int]): Device.
+        st_nlink (Optional[int]): Number of hard links.
+        st_uid (Optional[int]): User ID of owner.
+        st_gid (Optional[int]): Group ID of owner.
+        st_size (Optional[int]): Size of file, in bytes.
+        st_atime (Optional[float]): Time of most recent access.
+        st_mtime (Optional[float]): Time of most recent content modification.
+        st_ctime (Optional[float]): Platform dependent; time of most recent metadata change on Unix, or the time of creation on Windows.
+        st_atime_ns (Optional[int]): Time of most recent access, in nanoseconds.
+        st_mtime_ns (Optional[int]): Time of most recent content modification, in nanoseconds.
+        st_ctime_ns (Optional[int]): Platform dependent; time of most recent metadata change on Unix, or the time of creation on Windows, in nanoseconds.
+        st_blocks (Optional[int]): Number of 512-byte blocks allocated.
+        st_blksize (Optional[int]): File system block size.
+        st_rdev (Optional[int]): Device type (if inode device).
     """
 
     st_mode: Optional[int] = None
@@ -57,6 +75,10 @@ class BaseFileStatModel(BaseModel):
 class MacOSFileStatModel(BaseFileStatModel):
     """
     A Pydantic model to represent macOS/BSD specific file statistics.
+    Attributes:
+        st_flags (Optional[int]): File flags.
+        st_gen (Optional[int]): File generation number.
+        st_birthtime (Optional[float]): Time of file creation.
     """
 
     # macOS/BSD-specific
@@ -73,6 +95,9 @@ class MacOSFileStatModel(BaseFileStatModel):
 class WindowsFileStatModel(BaseFileStatModel):
     """
     A Pydantic model to represent Windows-specific file statistics.
+    Attributes:
+        st_file_attributes (Optional[int]): File attributes.
+        st_reparse_tag (Optional[int]): Reparse point tag.
     """
 
     # Windows-specific
@@ -88,6 +113,13 @@ class WindowsFileStatModel(BaseFileStatModel):
 class LinuxFileStatModel(BaseFileStatModel):
     """
     A Pydantic model to represent Linux-specific file statistics.
+    Attributes:
+        st_atim (Optional[float]): Time of most recent access.
+        st_mtim (Optional[float]): Time of most recent content modification.
+        st_ctim (Optional[float]): Time of most recent metadata change.
+        st_ctimensec (Optional[int]): Time of most recent metadata change, in nanoseconds.
+        st_mtimensec (Optional[int]): Time of most recent content modification, in nanoseconds.
+        st_atimensec (Optional[int]): Time of most recent access, in nanoseconds.
     """
 
     # Linux-specific
@@ -107,6 +139,18 @@ class LinuxFileStatModel(BaseFileStatModel):
 class PathModel(BaseModel):
     """
     A Pydantic model to represent pathlib.Path attributes.
+    Attributes:
+        name (str): The final path component.
+        suffix (str): The file extension of the final path component.
+        suffixes (list[str]): A list of all suffixes in the final path component.
+        stem (str): The final path component without its suffix.
+        parent (str): The parent directory of the path.
+        parents (list[str]): A list of all parent directories.
+        anchor (str): The part of the path before the directories.
+        drive (str): The drive letter (Windows only).
+        root (str): The root of the path.
+        parts (list[str]): A tuple giving access to the path’s various components.
+        is_absolute (bool): Whether the path is absolute.
     """
 
     name: str
@@ -146,6 +190,10 @@ class PathModel(BaseModel):
 def get_file_sha256(file_path: Path) -> str:
     """
     Calculate the SHA256 hash of a file.
+    Arguments:
+        file_path (Path): The file path to calculate the hash for.
+    Returns:
+        str: The SHA256 hash as a hexadecimal string.
     """
     import hashlib
 
@@ -159,6 +207,10 @@ def get_file_sha256(file_path: Path) -> str:
 def get_file_stat_model(file_path: Path) -> BaseFileStatModel:
     """
     Get the appropriate file stat model based on the operating system.
+    Arguments:
+        file_path (Path): The file path to get stats for.
+    Returns:
+        BaseFileStatModel: The corresponding file stat model instance.
     """
     file_stat = stat(file_path)
 
@@ -200,6 +252,10 @@ def get_file_stat_model(file_path: Path) -> BaseFileStatModel:
 def get_path_model(file_path: Path) -> PathModel:
     """
     Get the PathModel for a given file path.
+    Arguments:
+        file_path (Path): The file path to model.
+    Returns:
+        PathModel: The corresponding PathModel instance.
     """
     return PathModel(
         name=file_path.name,
@@ -219,6 +275,9 @@ def get_path_model(file_path: Path) -> PathModel:
 class FileLineModel(BaseModel):
     """
     A Pydantic model to represent a line in a file with its content and line number.
+    Attributes:
+        content (str): The content of the line.
+        line_number (int): The line number in the file.
     """
 
     content: str
@@ -234,6 +293,12 @@ class FileLineModel(BaseModel):
 class FileLinesModel(BaseModel):
     """
     A Pydantic model to represent multiple lines in a file.
+    Attributes:
+        lines (list[FileLineModel]): A list of FileLineModel instances.
+    Methods:
+        line_count(): Returns the total number of lines.
+        get_lines(start: int, end: int): Returns a subset of lines between start and end indices.
+        search_lines(keyword: str): Searches for lines containing the specified keyword.
     """
 
     lines: list[FileLineModel]
@@ -258,6 +323,10 @@ class FileLinesModel(BaseModel):
 class BaseFileModel(BaseModel):
     """
     A Pydantic model to represent a file with its path, SHA256 hash, and file statistics.
+    Attributes:
+        sha256 (str): The SHA256 hash of the file.
+        stat_json (BaseFileStatModel): The file statistics model.
+        path_json (PathModel): The path model of the file.
     """
 
     sha256: str
@@ -297,6 +366,9 @@ class BaseFileModel(BaseModel):
 class TextFileModel(BaseFileModel):
     """
     A Pydantic model to represent a text file with its lines.
+    Attributes:
+        content (str): The full content of the text file.
+        lines_json (FileLinesModel): The model representing the lines in the file.
     """
 
     content: str
@@ -314,6 +386,11 @@ class TextFileModel(BaseFileModel):
 class ImageFileModel(BaseFileModel):
     """
     A Pydantic model to represent an image file with its dimensions.
+    Attributes:
+        b64_data (str): The base64-encoded image data.
+        thubnail_b64_data (Optional[str]): The base64-encoded thumbnail data.
+        exif_data (dict[str, Any]): The EXIF metadata of the image.
+        fmt (Optional[str]): The image format (e.g., 'png', 'jpeg').
     """
 
     b64_data: str
