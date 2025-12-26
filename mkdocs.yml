@@ -1,4 +1,5 @@
 site_name: DevTul Core
+site_url: http://localhost:8080/docs/  # <--- Important for asset linking
 theme:
   name: material
 
