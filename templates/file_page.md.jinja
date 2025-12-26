@@ -1,0 +1,30 @@
+# {{ file.path_json.name }}
+
+**Path:** `{{ file.path_json.parent }}/{{ file.path_json.name }}`
+**Size:** {{ file.stat_json.st_size }} bytes
+**SHA256:** `{{ file.sha256 }}`
+
+## Context
+
+```text
+{{ tree_structure }}
+
+```
+
+## Content
+
+{% if file.type == 'image' %}
+<img src="data:image/{{ file.fmt }};base64,{{ file.b64_data }}" alt="{{ file.path_json.name }}" />
+
+{% elif file.type == 'text' %}
+
+```{{ file.path_json.suffix | replace('.', '') }}
+{{ file.content }}
+
+```
+
+{% else %}
+*(Binary file content not displayed)*
+{% endif %}
+
+---

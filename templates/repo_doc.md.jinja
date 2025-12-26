@@ -1,0 +1,27 @@
+# {{ snapshot.repository.name }}
+
+**Generated At:** {{ snapshot.created_at }}
+
+---
+
+## Files
+
+{% for file in snapshot.files %}
+### {{ file.path_json.name }}
+
+| Property | Value |
+|---|---|
+| Full Path | `{{ file.path_json.parent }}/{{ file.path_json.name }}` |
+| Size | {{ file.stat_json.st_size }} bytes |
+
+{% if file.type == 'text' %}
+```{{ file.path_json.suffix | replace('.', '') }}
+{{ file.content }}
+
+```
+
+{% endif %}
+
+---
+
+{% endfor %}
