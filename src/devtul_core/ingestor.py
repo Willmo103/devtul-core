@@ -1,7 +1,11 @@
+from pathlib import Path
+
 from sqlalchemy.orm import Session
 
 from devtul_core.db_models import (
     FileModel,
+    Folder,
+    FolderSnapshot,
     ImageFileModel,
     Repository,
     RepoSnapshot,
@@ -15,22 +19,43 @@ from devtul_core.fs_models import TextFileModel as PyTextFile
 
 
 def ingest_scan(
-    session: Session, repo_name: str, root_path: str, dir_model: BaseDirectoryModel
+    session: Session,
+    root_path: str,
+    dir_model: BaseDirectoryModel,
+    repo_name: str | None = None,
+    folder_name: str | None = None,
 ):
     """
     Saves a Pydantic BaseDirectoryModel tree into the DB as a snapshot.
     """
-    # 1. Get or Create Repo
-    repo = session.query(Repository).filter_by(name=repo_name).first()
-    if not repo:
-        repo = Repository(name=repo_name, path=root_path)
-        session.add(repo)
-        session.flush()
+    snapshot: RepoSnapshot | FolderSnapshot
 
-    # 2. Create Snapshot
-    snapshot = RepoSnapshot(repository_id=repo.id)
-    session.add(snapshot)
-    session.flush()
+    if folder_name and repo_name:
+        raise ValueError("Specify either repo_name or folder_name, not both.")
+    if not repo_name and not folder_name:
+        folder_name = Path(root_path).name
+    if repo_name:
+        repo = session.query(Repository).filter_by(name=repo_name).first()
+        if not repo:
+            repo = Repository(name=repo_name, path=root_path)
+            session.add(repo)
+            session.flush()
+
+        # 2. Create Snapshot
+        snapshot = RepoSnapshot(repository_id=repo.id)
+        session.add(snapshot)
+        session.flush()
+    elif folder_name:
+        folder = session.query(Folder).filter_by(name=folder_name).first()
+        if not folder:
+            folder = Folder(name=folder_name, path=root_path)
+            session.add(folder)
+            session.flush()
+
+        # 2. Create Snapshot
+        snapshot = FolderSnapshot(folder_id=folder.id)
+        session.add(snapshot)
+        session.flush()
 
     # 3. Flatten and Save Files recursively
     def _recurse_save(directory):

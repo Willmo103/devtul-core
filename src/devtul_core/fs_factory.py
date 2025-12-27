@@ -15,6 +15,7 @@ from devtul_core.fs_models import (
 
 
 class FileSystemFactory:
+
     def __init__(
         self,
         root: Path,
@@ -129,7 +130,6 @@ class FileSystemFactory:
         return filtered
 
     def _should_ignore(self, path: Path) -> bool:
-        path_str = str(path.as_posix())
         try:
             rel_parts = path.relative_to(self.root).parts
         except ValueError:

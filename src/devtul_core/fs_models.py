@@ -295,10 +295,6 @@ class FileLinesModel(BaseModel):
     A Pydantic model to represent multiple lines in a file.
     Attributes:
         lines (list[FileLineModel]): A list of FileLineModel instances.
-    Methods:
-        line_count(): Returns the total number of lines.
-        get_lines(start: int, end: int): Returns a subset of lines between start and end indices.
-        search_lines(keyword: str): Searches for lines containing the specified keyword.
     """
 
     lines: list[FileLineModel]
@@ -411,7 +407,6 @@ class ImageFileModel(BaseFileModel):
 class BaseDirectoryModel(BaseModel):
     """
     A Pydantic model to represent a directory with its path and file statistics.
-
     Attributes:
         path_json (PathModel): The path model of the directory.
         stat_json (BaseFileStatModel): The file statistics model of the directory.
